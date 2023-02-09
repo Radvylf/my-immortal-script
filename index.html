@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>MyImmortalScript</title>
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                overflow-x: scroll;
+                padding: 0;
+                margin: 12px;
+                line-height: 1.25;
+            }
+            
+            small {
+                font-size: 10px;
+                color: #444444;
+            }
+            
+            ul {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+                
+                max-height: 484px;
+                overflow-y: scroll;
+            }
+            
+            ul li, td p {
+                cursor: pointer;
+                padding: 1px;
+                margin: 0;
+            }
+            
+            ul li:hover, td p:hover {
+                background-color: #f6f6f6;
+            }
+            
+            table {
+                border-collapse: collapse;
+                font-size: 12px;
+            }
+            
+            td {
+                border: 1px solid #aaa;
+                padding: 4px;
+                white-space: nowrap;
+            }
+            
+            button {
+                display: block;
+            }
+            
+            body > * {
+                margin-top: 0px;
+                margin-bottom: 12px;
+            }
+            
+            table {
+                margin-bottom: 6px;
+            }
+            
+            .construct-cont {
+                display: flex;
+            }
+            
+            .construct-cont button {
+                margin-right: 6px;
+            }
+            
+            #my-immortal-script {
+                height: 72px;
+            }
+            
+            h2 {
+                font-size: 14px;
+                margin-top: 0;
+            }
+            
+            h3 {
+                font-size: 10px;
+                margin-top: 0;
+                margin-bottom: 6px;
+            }
+            
+            #import-fail, #source-fail {
+                font-size: 10px;
+                color: #333;
+                margin-top: -4px;
+                margin-bottom: 4px;
+                display: none;
+            }
+            
+            .box-cont {
+                display: flex;
+                margin-top: -12px;
+                user-select: none;
+            }
+            
+            .box-cont input {
+                height: 12px;
+                margin: 2px;
+            }
+            
+            .box-cont label {
+                font-size: 11px;
+                line-height: 16px;
+                height: 16px;
+                padding-left: 2px;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <h2>MortalScript (to, from) MyImmortalScript</h2>
+        
+        <textarea id="mortal-script" rows="4" cols="100"></textarea>
+        
+        <div class="construct-cont">
+            <button id="mortal-to-my-immortal">Construct</button>
+            <button id="mortal-to-shortest">Construct shortest</button>
+        </div>
+        
+        <div id="my-immortal-construct"></div>
+        
+        <button id="add-paragraph">+ Add (unnecessary) paragraph</button>
+        
+        <div class="construct-cont">
+            <button id="stringify">Stringify</button>
+            <button id="import">Import</button>
+        </div>
+        
+        <p id="import-fail">You suck lol</p>
+        
+        <textarea id="my-immortal-script" rows="4" cols="100"></textarea>
+        
+        <hr/>
+        
+        <h2>MyImmortalScript</h2>
+        
+        <h3>thinks to do:</h3>
+        
+        <p id="source-fail"></p>
+        
+        <textarea id="my-immortal-script-source" rows="4" cols="100"></textarea>
+        
+        <h3>stuff to gif to it (fangz btw):</h3>
+        
+        <textarea id="input"></textarea>
+        
+        <div class="box-cont">
+            <input type="checkbox" id="string-io" checked/>
+            <label for="string-io">inputs wif a string</label>
+        </div>
+        
+        <button id="do-it">OMG jus do it ok</button>
+        
+        <h3>cool goffik output:</h3>
+        
+        <textarea id="output" readonly></textarea>
+        
+        <!--Test: +{0(C'0.{+,-->
+        <!--Test: 0*k'1T$-)0}*,'|11'_(\%_-(-->
+        
+        <script src="my-immortal-proc-lib.js"></script>
+        <script src="mortal-script-final.js"></script>
+        
+        <script>
+            (() => {
+                var dom = {};
+
+                for (var obj of document.querySelectorAll("*[id]"))
+                    dom[obj.id.replace(/-/g, "_")] = obj;
+                
+                dom.add_paragraph.style.display = "none";
+                dom.stringify.disabled = true;
+                
+                var mis = [];
+                
+                var par_fix = (pars) => {
+                    var fix = [];
+                    
+                    var min = pars.reduce((m, p) => Math.min(m, p.length - (p.length && p[p.length - 1] == "*" ? 1 : 0)), Infinity);
+                    
+                    if (min == Infinity)
+                        return [];
+                    
+                    for (var i = 0; i < min; i++) {
+                        if (pars.slice(1).some(p => p[i] != pars[0][i]))
+                            break;
+                        
+                        fix.push(pars[0][i]);
+                    }
+                    
+                    return fix;
+                };
+                
+                var mis_fix = (mis) => {
+                    var fix = [];
+                    var off = 0;
+                    
+                    var min = mis.reduce((m, s) => Math.min(m, s.length - (s.length && s[s.length - 1].length == 1 && s[s.length - 1][0] == "*" ? 1 : 0)), Infinity);
+                    
+                    if (min == Infinity)
+                        return [];
+                    
+                    for (var f, i = 0; i < min; i++) {
+                        f = par_fix(mis.map(s => s[i]));
+                        
+                        if (f.length == 0)
+                            break;
+                        
+                        fix.push(f);
+                        
+                        if (mis.some(s => f.length < s[i].length)) {
+                            off = 1;
+                            
+                            break;
+                        }
+                    }
+                    
+                    return [fix, off];
+                };
+                
+                var strip = (mis) => {
+                    mis = [...mis.map(s => [...s])];
+                    
+                    if (mis.length && mis[mis.length - 1][mis[mis.length - 1].length - 1] == "*")
+                        mis[mis.length - 1].pop();
+                    
+                    if (mis.length && mis[mis.length - 1].length == 0)
+                        mis.pop();
+                    
+                    return mis;
+                };
+                
+                var starts_with = (mis, fix) => {
+                    if (fix.length > mis.length)
+                        return false;
+                    
+                    for (var i = 0; i < fix.length - 1; i++)
+                        if (mis[i].length != fix[i].length || mis[i].some((x, k) => x != fix[i][k]))
+                            return false;
+                    
+                    i = fix.length - 1;
+                    
+                    for (var k = 0; k < fix[i].length; k++)
+                        if (mis[i][k] != fix[i][k])
+                            return false;
+                    
+                    return true;
+                };
+                
+                var par_starts_with = (p1, p2) => p1.length >= p2.length && p2.every((x, i) => x == p1[i]);
+                
+                var wide = (part) => {
+                    var string = [part];
+                    
+                    while (1) {
+                        var ticks = my_immortal_proc_lib.mis_ticks(string[string.length - 1]);
+                        
+                        if (ticks.length != 1 || ticks[0][0] == "~FINISH")
+                            break;
+                        
+                        string.push(ticks[0][0]);
+                    }
+                    
+                    return string;
+                };
+                
+                var fix_options = (mis, fix) => {
+                    var opts = [...new Set(mis.filter(s => starts_with(s, fix)).map(s => s[fix.length - 1].length == fix[fix.length - 1].length ? "~FINISH" : s[fix.length - 1][fix[fix.length - 1].length]))];
+                    
+                    var wc = 0;
+                    
+                    var ticks = my_immortal_proc_lib.mis_ticks(fix[fix.length - 1][fix[fix.length - 1].length - 1] || "~START");
+                    var sum = ticks.reduce((s, t) => s + t[1], 0);
+                    
+                    if (opts.length == 0 || opts.length == 1 && opts[0] == "*") {
+                        wc = 1;
+                        
+                        opts = ticks.map(t => t[0]);
+                    }
+                    
+                    ticks = new Map(ticks);
+                    
+                    // opts.sort((a, b) => ticks.get(b) - ticks.get(a) || (a < b ? -1 : a == b ? 0 : 1));
+                    
+                    return opts.map((o) => {
+                        var li = document.createElement("li");
+                        
+                        if (o == "~FINISH") {
+                            var i = document.createElement("i");
+                            i.textContent = "(finish)";
+                            
+                            li.appendChild(i);
+                        } else {
+                            var o_wide = wide(o);
+                            
+                            li.appendChild(document.createTextNode(my_immortal_proc_lib.mis_to_final_string([o_wide])));
+                            li.setAttribute("fix", JSON.stringify(o_wide));
+                        }
+                        
+                        if (!wc) {
+                            li.appendChild(document.createTextNode(" "));
+
+                            var small = document.createElement("small");
+                            small.textContent = Math.round(Math.log2(sum / ticks.get(o)) * 100) / 100 + " bits";
+
+                            li.appendChild(small);
+                        }
+                        
+                        return li;
+                    });
+                };
+                
+                var cons = (fill = null, mis_known) => {
+                    if (dom.mortal_script.value == "")
+                        return;
+                    
+                    while (dom.my_immortal_construct.firstChild)
+                        dom.my_immortal_construct.removeChild(dom.my_immortal_construct.firstChild);
+                    
+                    mis = mis_known || [my_immortal_proc_lib.mortal_script_to_mis(dom.mortal_script.value)];
+                    
+                    dom.add_paragraph.style.display = "none";
+                    
+                    dom.stringify.disabled = true;
+                    
+                    var [fix, off] = mis_fix(mis[0]);
+                    
+                    for (var i = 0; i < fix.length - off; i++) {
+                        var table = document.createElement("table");
+                        var tbody = document.createElement("tbody");
+                        table.appendChild(tbody);
+                        var tr = document.createElement("tr");
+                        tbody.appendChild(tr);
+                        var td = document.createElement("td");
+                        tr.appendChild(td);
+                        var b = document.createElement("b");
+                        td.appendChild(b);
+                        b.appendChild(document.createTextNode(my_immortal_proc_lib.mis_to_final_string([fix[i]])));
+                        
+                        dom.my_immortal_construct.appendChild(table);
+                    }
+                    
+                    var push_opts = (tr, fill = null) => {
+                        var td2 = document.createElement("td");
+                        var ul = document.createElement("ul");
+                        td2.appendChild(ul);
+                        
+                        for (var li of fix_options(mis[0], fix)) {
+                            ((li) => {
+                                ul.appendChild(li);
+
+                                li.onclick = () => {
+                                    td2.removeChild(ul);
+
+                                    if (li.childNodes[0].nodeName == "I") {
+                                        tr.removeChild(td2);
+
+                                        if (mis[0].some(s => starts_with(fix, strip(s))) && (!fill || fill.length <= fix.length)) {
+                                            dom.add_paragraph.style.display = "";
+
+                                            dom.stringify.disabled = false;
+                                        } else {
+                                            var table = document.createElement("table");
+                                            var tbody = document.createElement("tbody");
+                                            table.appendChild(tbody);
+                                            tr = document.createElement("tr");
+                                            tbody.appendChild(tr);
+
+                                            fix.push([]);
+
+                                            dom.my_immortal_construct.appendChild(table);
+
+                                            window.setTimeout(push_opts, 0, tr, fill);
+                                        }
+                                    } else {
+                                        var p = document.createElement("p");
+
+                                        p.textContent = li.childNodes[0].textContent;
+                                        p.setAttribute("fix", li.getAttribute("fix"));
+                                        td2.appendChild(p);
+
+                                        p.onclick = () => {
+                                            while (dom.my_immortal_construct.lastChild != tr.parentNode.parentNode) {
+                                                dom.my_immortal_construct.removeChild(dom.my_immortal_construct.lastChild);
+
+                                                fix.pop();
+                                            }
+
+                                            while (tr.lastChild != td2) {
+                                                if (tr.lastChild.firstChild.nodeName != "UL")
+                                                    for (var i = 0; i < JSON.parse(tr.lastChild.firstChild.getAttribute("fix")).length; i++)
+                                                        fix[fix.length - 1].pop();
+
+                                                tr.removeChild(tr.lastChild);
+                                            }
+
+                                            for (var i = 0; i < JSON.parse(tr.lastChild.firstChild.getAttribute("fix")).length; i++)
+                                                fix[fix.length - 1].pop();
+
+                                            tr.removeChild(tr.lastChild);
+
+                                            dom.add_paragraph.style.display = "none";
+
+                                            dom.stringify.disabled = true;
+
+                                            window.setTimeout(push_opts, 0, tr, fill);
+                                        };
+
+                                        fix[fix.length - 1].push(...JSON.parse(li.getAttribute("fix")));
+
+                                        window.setTimeout(push_opts, 0, tr, fill);
+                                    }
+                                };
+                                
+                                if (fill && fill.length >= fix.length && (fill[fix.length - 1].length > fix[fix.length - 1].length && par_starts_with(fill[fix.length - 1].slice(fix[fix.length - 1].length), JSON.parse(li.getAttribute("fix"))) || fill[fix.length - 1].length == fix[fix.length - 1].length && !li.hasAttribute("fix")))
+                                    window.setTimeout(() => li.onclick(), 0);
+                            })(li);
+                        }
+                        
+                        tr.appendChild(td2);
+                    };
+                    
+                    if (off || fill && fill.length > dom.my_immortal_construct.childNodes.length) {
+                        var table = document.createElement("table");
+                        var tbody = document.createElement("tbody");
+                        table.appendChild(tbody);
+                        var tr = document.createElement("tr");
+                        tbody.appendChild(tr);
+                        var td = document.createElement("td");
+                        tr.appendChild(td);
+                        var b = document.createElement("b");
+                        td.appendChild(b);
+                        b.appendChild(document.createTextNode(my_immortal_proc_lib.mis_to_final_string([fix[fix.length - 1]])));
+                        
+                        dom.my_immortal_construct.appendChild(table);
+                        
+                        push_opts(tr, fill);
+                    } else {
+                        dom.add_paragraph.style.display = "";
+                        
+                        dom.stringify.disabled = false;
+                    }
+                    
+                    dom.add_paragraph.onclick = () => {
+                        var table = document.createElement("table");
+                        var tbody = document.createElement("tbody");
+                        table.appendChild(tbody);
+                        tr = document.createElement("tr");
+                        tbody.appendChild(tr);
+
+                        fix.push([]);
+
+                        dom.my_immortal_construct.appendChild(table);
+
+                        window.setTimeout(push_opts, 0, tr);
+                        
+                        dom.add_paragraph.style.display = "none";
+                        
+                        dom.stringify.disabled = true;
+                    };
+                    
+                    dom.stringify.onclick = () => {
+                        dom.my_immortal_script.value = my_immortal_proc_lib.mis_to_final_string(fix);
+                    };
+                };
+                
+                dom.mortal_to_my_immortal.onclick = () => cons();
+                
+                dom.mortal_to_shortest.onclick = () => {
+                    if (dom.mortal_script.value == "")
+                        return;
+                    
+                    while (dom.my_immortal_construct.firstChild)
+                        dom.my_immortal_construct.removeChild(dom.my_immortal_construct.firstChild);
+                    
+                    var mis = my_immortal_proc_lib.mortal_script_to_mis(dom.mortal_script.value);
+                    
+                    dom.add_paragraph.style.display = "none";
+                    
+                    dom.stringify.disabled = true;
+                    
+                    var shortests = mis.map(strip).map(s => s.length ? [...s.slice(0, -1), [...s[s.length - 1].slice(0, -1), ...my_immortal_proc_lib.short_mis_finish(s[s.length - 1][s[s.length - 1].length - 1])]] : []).map(s => [s, s.reduce((z, p) => z + (z ? 2 : 0) + my_immortal_proc_lib.prob_string_size(p), 0)]);
+                    
+                    var min = [null, Infinity];
+                    
+                    for (var i = 0; i < shortests.length; i++)
+                        if (shortests[i][1] < min[1])
+                            min = shortests[i];
+                    
+                    var short = min[0];
+                    
+                    cons(short, [mis]);
+                };
+                
+                dom.my_immortal_script.oninput = () => {
+                    dom.import_fail.style.display = "";
+                };
+                
+                dom.import.onclick = (info) => {
+                    if (dom.my_immortal_script.value == "" && !info.ctrlKey)
+                        return;
+                    
+                    try {
+                        var mis = my_immortal_proc_lib.final_string_to_mis(dom.my_immortal_script.value);
+                        
+                        if (mis == null)
+                            throw "suspicious punctuation";
+                        
+                        dom.mortal_script.value = my_immortal_proc_lib.mis_to_mortal_script(mis);
+
+                        while (dom.my_immortal_construct.firstChild)
+                            dom.my_immortal_construct.removeChild(dom.my_immortal_construct.firstChild);
+
+                        dom.add_paragraph.style.display = "none";
+
+                        dom.stringify.disabled = true;
+                    } catch (string) {
+                        dom.import_fail.textContent = "Couldn't import; " + string;
+                        dom.import_fail.style.display = "block";
+                    }
+                };
+                
+                var kill = null;
+                
+                dom.my_immortal_script_source.oninput = () => {
+                    dom.source_fail.style.display = "";
+                };
+                
+                dom.do_it.onclick = () => {
+                    if (kill) {
+                        kill();
+                    } else {
+                        var mortal;
+                        
+                        dom.output.value = "";
+                        
+                        try {
+                            var mis = my_immortal_proc_lib.final_string_to_mis(dom.my_immortal_script_source.value);
+
+                            if (mis == null)
+                                throw "suspicious punctuation";
+                            
+                            mortal = my_immortal_proc_lib.mis_to_mortal_script(mis);
+                        } catch (string) {
+                            dom.source_fail.textContent = "Couldn't run MyImmortalScript";
+                            dom.source_fail.style.display = "block";
+                            
+                            return;
+                        }
+                        
+                        var input = dom.string_io.checked ? [...dom.input.value].map(x => BigInt(x.codePointAt())) : (dom.input.value.match(/\d+/) || []).map(x => BigInt(x));
+
+                        dom.do_it.textContent = "Nono stoppit!";
+                        
+                        var doing = mortal_script(mortal, input);
+                        
+                        kill = doing.kill;
+                        
+                        doing.onoutput = (output) => {
+                            dom.output.value += (dom.string_io.checked ? String.fromCodePoint(Number(output)) : (dom.output.value ? " " : "") + output);
+                        };
+                        
+                        doing.onfinish = () => {
+                            dom.do_it.textContent = "OMG jus do it ok";
+                            
+                            kill = null;
+                        };
+                    }
+                };
+            })();
+        </script>
+    </body>
+</html>
